@@ -1,0 +1,24 @@
+{
+  "name": "bpoptima-decision-replay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --input-type=module -e \"import { createServer } from 'vite'; import react from '@vitejs/plugin-react'; const server = await createServer({ configFile: false, plugins: [react()] }); await server.listen(); server.printUrls(); await new Promise(() => {});\"",
+    "typecheck": "tsc -b --pretty false",
+    "build": "tsc -b && node --input-type=module -e \"import { build } from 'vite'; import react from '@vitejs/plugin-react'; await build({ root: process.cwd(), configFile: false, plugins: [react()], build: { outDir: 'dist', emptyOutDir: true } });\"",
+    "preview": "node --input-type=module -e \"import { preview } from 'vite'; const server = await preview({ configFile: false, preview: { host: '127.0.0.1', port: 4173 } }); server.printUrls(); await new Promise(() => {});\""
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "6.0.3",
+    "typescript": "^5.6.3",
+    "vite": "8.1.5"
+  }
+}
