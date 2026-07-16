@@ -29,21 +29,6 @@ const useCaseCards = [
   },
 ];
 
-const trustPrinciples = [
-  {
-    title: 'Client-owned rules',
-    body: 'The policy controls the route, not an open-ended AI response.',
-  },
-  {
-    title: 'Human judgment',
-    body: 'Exceptions remain with qualified reviewers.',
-  },
-  {
-    title: 'Complete traceability',
-    body: 'Evidence, facts, rules and routes stay connected.',
-  },
-];
-
 const replayStages = [
   {
     number: '01',
@@ -203,43 +188,6 @@ function UseCasesSection() {
   );
 }
 
-function TrustSection() {
-  return (
-    <section className="trust-section" aria-labelledby="trust-title">
-      <div className="trust-inner">
-        <span className="section-label">TRUST PRINCIPLES</span>
-        <h2 id="trust-title">Designed for decisions that need a record.</h2>
-        <div className="trust-grid">
-          {trustPrinciples.map((principle) => (
-            <article className="trust-card" key={principle.title}>
-              <h3>{principle.title}</h3>
-              <p>{principle.body}</p>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FinalReplayCta({ onReplay }: { onReplay: () => void }) {
-  return (
-    <section className="final-replay-section" aria-labelledby="final-replay-title">
-      <div className="final-replay-inner">
-        <span className="section-label">DECISION REPLAY</span>
-        <h2 id="final-replay-title">Replay the synthetic decision end to end.</h2>
-        <p>
-          Follow Asha Stores from evidence intake through facts, client policy,
-          human review and audit.
-        </p>
-        <button className="primary-button" type="button" onClick={onReplay}>
-          Replay a synthetic decision
-        </button>
-      </div>
-    </section>
-  );
-}
-
 function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [view, setView] = useState<View>('landing');
@@ -325,8 +273,6 @@ function App() {
         <DecisionFlowPreview />
         <HowItWorksSection onReplay={openProductTour} />
         <UseCasesSection />
-        <TrustSection />
-        <FinalReplayCta onReplay={openProductTour} />
       </main>
     </div>
   );
