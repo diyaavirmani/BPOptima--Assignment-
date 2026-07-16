@@ -6,16 +6,16 @@ type HeaderProps = {
   theme: Theme;
   onToggleTheme: () => void;
   onOpenTour: () => void;
-  onOpenDashboard: () => void;
   onScrollToHow: () => void;
+  onScrollToUseCases: () => void;
 };
 
 function Header({
   theme,
   onToggleTheme,
   onOpenTour,
-  onOpenDashboard,
   onScrollToHow,
+  onScrollToUseCases,
 }: HeaderProps) {
   const isDark = theme === 'dark';
 
@@ -36,11 +36,8 @@ function Header({
           <button className="nav-link-button" type="button" onClick={onScrollToHow}>
             How it works
           </button>
-          <button className="nav-link-button" type="button" onClick={onOpenTour}>
-            Decision replay
-          </button>
-          <button className="nav-link-button" type="button" onClick={onOpenDashboard}>
-            Decision dashboard
+          <button className="nav-link-button" type="button" onClick={onScrollToUseCases}>
+            Use cases
           </button>
         </div>
 

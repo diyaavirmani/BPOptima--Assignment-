@@ -1,8 +1,8 @@
 import { ArrowRight, ClipboardCheck, Landmark, ShieldCheck } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import DecisionDashboard from './components/DecisionDashboard';
+import DecisionFlowPreview from './components/DecisionFlowPreview';
 import Header from './components/Header';
-import HeroAnimation from './components/HeroAnimation';
 import ProductTour from './components/ProductTour';
 
 type Theme = 'light' | 'dark';
@@ -11,33 +11,36 @@ type View = 'landing' | 'tour' | 'dashboard';
 const useCaseCards = [
   {
     title: 'Credit Decisions',
-    body: 'Assess risk, apply policy, and document rationales with a complete audit trail.',
+    body:
+      'Convert application evidence into policy-controlled approval, rejection, or human review.',
     icon: Landmark,
   },
   {
     title: 'Claims Review',
-    body: 'Standardize intake, evaluate coverage, and route exceptions with transparency.',
+    body:
+      'Check submitted evidence and route coverage or fraud exceptions to adjusters.',
     icon: ShieldCheck,
   },
   {
     title: 'Compliance Checks',
-    body: 'Run consistent checks, capture evidence, and prove compliance with ease.',
+    body:
+      'Apply consistent screening rules and send true exceptions to analysts.',
     icon: ClipboardCheck,
   },
 ];
 
-const heroMetrics = [
+const trustPrinciples = [
   {
-    value: '~99%',
-    label: 'Decision Accuracy',
+    title: 'Client-owned rules',
+    body: 'The policy controls the route, not an open-ended AI response.',
   },
   {
-    value: '<100ms',
-    label: 'End-to-End Latency',
+    title: 'Human judgment',
+    body: 'Exceptions remain with qualified reviewers.',
   },
   {
-    value: 'Zero',
-    label: 'Data Leakage',
+    title: 'Complete traceability',
+    body: 'Evidence, facts, rules and routes stay connected.',
   },
 ];
 
@@ -46,31 +49,31 @@ const replayStages = [
     number: '01',
     title: 'Evidence received',
     description:
-      'A loan application, sales ledger, and four of six required bank statements enter the workflow.',
+      'A loan application, ledger and incomplete statement package enter the workflow.',
   },
   {
     number: '02',
     title: 'Facts extracted',
     description:
-      'Revenue, obligations, requested amount, and missing evidence become structured decision facts.',
+      'Relevant information becomes structured decision facts.',
   },
   {
     number: '03',
     title: 'Policy executed',
     description:
-      'Illustrative client-owned rules evaluate the same facts consistently and return PASS, FAIL, or TRIGGERED.',
+      'Client-owned rules evaluate the same facts consistently.',
   },
   {
     number: '04',
     title: 'Human review',
     description:
-      'Incomplete mandatory evidence routes the case to a Senior Credit Reviewer.',
+      'Missing mandatory evidence sends the case to a qualified reviewer.',
   },
   {
     number: '05',
     title: 'Audit recorded',
     description:
-      'Every evidence item, extracted fact, policy rule, and route remains inspectable.',
+      'Evidence, facts, rules and routes remain connected.',
   },
 ];
 
@@ -169,6 +172,68 @@ function HowItWorksSection({ onReplay }: HowItWorksSectionProps) {
   );
 }
 
+function UseCasesSection() {
+  return (
+    <section className="use-case-section" id="use-cases" aria-labelledby="use-case-title">
+      <h2 id="use-case-title">One decision system. Different client policies.</h2>
+      <div className="use-case-grid">
+        {useCaseCards.map(({ title, body, icon: Icon }) => (
+          <article className="use-case-card" key={title}>
+            <span className="use-case-icon" aria-hidden="true">
+              <Icon size={34} strokeWidth={1.8} />
+            </span>
+            <div>
+              <h3>{title}</h3>
+              <p>{body}</p>
+              <a href="#how-it-works">
+                Learn more
+                <ArrowRight size={16} aria-hidden="true" />
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TrustSection() {
+  return (
+    <section className="trust-section" aria-labelledby="trust-title">
+      <div className="trust-inner">
+        <span className="section-label">TRUST PRINCIPLES</span>
+        <h2 id="trust-title">Designed for decisions that need a record.</h2>
+        <div className="trust-grid">
+          {trustPrinciples.map((principle) => (
+            <article className="trust-card" key={principle.title}>
+              <h3>{principle.title}</h3>
+              <p>{principle.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalReplayCta({ onReplay }: { onReplay: () => void }) {
+  return (
+    <section className="final-replay-section" aria-labelledby="final-replay-title">
+      <div className="final-replay-inner">
+        <span className="section-label">DECISION REPLAY</span>
+        <h2 id="final-replay-title">Replay the synthetic decision end to end.</h2>
+        <p>
+          Follow Asha Stores from evidence intake through facts, client policy,
+          human review and audit.
+        </p>
+        <button className="primary-button" type="button" onClick={onReplay}>
+          Replay a synthetic decision
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [view, setView] = useState<View>('landing');
@@ -206,6 +271,18 @@ function App() {
     });
   };
 
+  const scrollToUseCases = () => {
+    const target = document.getElementById('use-cases');
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+
+    target?.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  };
+
   if (view === 'tour') {
     return <ProductTour onExit={showLanding} onOpenDashboard={openDashboard} />;
   }
@@ -225,57 +302,41 @@ function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenTour={openProductTour}
-        onOpenDashboard={openDashboard}
         onScrollToHow={scrollToHowItWorks}
+        onScrollToUseCases={scrollToUseCases}
       />
 
       <main id="top">
         <section className="hero-section" aria-labelledby="hero-title">
           <div className="hero-copy">
+            <span className="hero-eyebrow">DECISION INFRASTRUCTURE FOR REGULATED OPERATIONS</span>
             <h1 id="hero-title">
-              <span>From evidence to</span>
-              <span className="headline-accent">accountable decisions.</span>
+              Turn messy evidence into decisions you can defend.
             </h1>
             <p>
-              BPOptima uses GroundSet to structure evidence, apply
-              client-owned policy, route exceptions to people, and record every
-              step.
+              BPOptima reads documents and images, converts them into structured
+              facts, applies your deterministic rules, routes exceptions to
+              people, and records every step.
             </p>
-            <dl className="hero-metrics" aria-label="BPOptima performance highlights">
-              {heroMetrics.map((metric) => (
-                <div className="hero-metric" key={metric.label}>
-                  <dt>{metric.label}</dt>
-                  <dd>{metric.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          <HeroAnimation />
-        </section>
-
-        <section className="use-case-section" aria-labelledby="use-case-title">
-          <h2 id="use-case-title">Why teams use BPOptima</h2>
-          <div className="use-case-grid">
-            {useCaseCards.map(({ title, body, icon: Icon }) => (
-              <article className="use-case-card" key={title}>
-                <span className="use-case-icon" aria-hidden="true">
-                  <Icon size={34} strokeWidth={1.8} />
-                </span>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{body}</p>
-                  <a href="#how-it-works">
-                    Learn more
-                    <ArrowRight size={16} aria-hidden="true" />
-                  </a>
-                </div>
-              </article>
-            ))}
+            <div className="hero-actions">
+              <button className="primary-button" type="button" onClick={openProductTour}>
+                Replay a synthetic decision
+              </button>
+              <button className="secondary-button" type="button" onClick={scrollToHowItWorks}>
+                See the 5-step flow
+              </button>
+            </div>
+            <p className="hero-trust-line">
+              Synthetic demo · Client-owned policy · Human review · Full audit trail
+            </p>
           </div>
         </section>
 
+        <DecisionFlowPreview />
         <HowItWorksSection onReplay={openProductTour} />
+        <UseCasesSection />
+        <TrustSection />
+        <FinalReplayCta onReplay={openProductTour} />
       </main>
     </div>
   );

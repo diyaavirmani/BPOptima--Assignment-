@@ -125,8 +125,6 @@ function tourReducer(state: TourState, action: TourAction): TourState {
             ![
               'run-policy',
               'inspect-failed-rule',
-              'inspect-escalation-policy',
-              'continue-to-route',
             ].includes(actionId),
         ),
       );
@@ -361,7 +359,7 @@ const policyGraphNodes = [
     result: 'TRIGGERED',
     tone: 'warn',
     delay: 2150,
-    targetId: 'escalation-rule',
+    targetId: undefined,
   },
   {
     id: 'output',
@@ -376,9 +374,15 @@ const policyGraphNodes = [
 ] as const;
 
 function hasReachedScene(activeScene: TourScene, sceneId: string) {
+  const activeIndex = tourScenes.findIndex((scene) => scene.id === activeScene.id);
+  const targetIndex = tourScenes.findIndex((scene) => scene.id === sceneId);
+
+  if (activeIndex === -1 || targetIndex === -1) {
+    return false;
+  }
+
   return (
-    tourScenes.findIndex((scene) => scene.id === activeScene.id) >=
-    tourScenes.findIndex((scene) => scene.id === sceneId)
+    activeIndex >= targetIndex
   );
 }
 
@@ -481,6 +485,19 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
       activeScene.id === 'route-human-review' &&
       !state.completedActions.includes('route-human-review')
     ) {
+      routeTimerRef.current = window.setTimeout(() => {
+        routeTimerRef.current = null;
+        dispatch({ type: 'next' });
+      }, 900);
+      return;
+    }
+
+    const delayedTransition =
+      activeScene.id === 'select-revenue-fact' ||
+      activeScene.id === 'inspect-failed-rule' ||
+      activeScene.id === 'open-failed-rule-detail';
+
+    if (delayedTransition && !state.completedActions.includes(activeScene.id)) {
       routeTimerRef.current = window.setTimeout(() => {
         routeTimerRef.current = null;
         dispatch({ type: 'next' });
@@ -898,7 +915,9 @@ function renderProductScreen(
 ) {
   if (screen === 'evidence') {
     const caseSelected = hasReachedScene(activeScene, 'load-evidence');
-    const evidenceLoaded = hasReachedScene(activeScene, 'open-document-workbench');
+    const evidenceLoaded =
+      completedActions.includes('load-evidence') ||
+      hasReachedScene(activeScene, 'parse-document');
 
     return (
       <div className="tour-screen-grid tour-evidence-grid">
@@ -982,15 +1001,6 @@ function renderProductScreen(
               </article>
             ))}
           </div>
-
-          <button
-            type="button"
-            className="tour-action-button"
-            disabled={!evidenceLoaded}
-            {...targetProps('open-workbench')}
-          >
-            Open document workbench
-          </button>
         </section>
       </div>
     );
@@ -999,8 +1009,8 @@ function renderProductScreen(
   if (screen === 'document-workbench') {
     const parsed = hasReachedScene(activeScene, 'extract-structured-facts');
     const factsExtracted = hasReachedScene(activeScene, 'select-revenue-fact');
-    const revenueSelected = hasReachedScene(activeScene, 'continue-to-policy');
-    const sourceHighlighted = hasReachedScene(activeScene, 'continue-to-policy');
+    const revenueSelected = completedActions.includes('select-revenue-fact');
+    const sourceHighlighted = completedActions.includes('select-revenue-fact');
 
     return (
       <div className="tour-workbench-shell">
@@ -1231,14 +1241,6 @@ function renderProductScreen(
               <span>Sales Ledger.jpg · Page 1</span>
             </div>
 
-            <button
-              type="button"
-              className="tour-action-button tour-continue-button"
-              disabled={!sourceHighlighted}
-              {...targetProps('continue-policy')}
-            >
-              Continue to policy
-            </button>
           </section>
         </div>
       </div>
@@ -1246,14 +1248,12 @@ function renderProductScreen(
   }
 
   if (screen === 'policy') {
-    const inputFactsVisible =
-      hasReachedScene(activeScene, 'run-policy') ||
-      completedActions.includes('review-policy-graph');
+    const inputFactsVisible = true;
     const policyRunStarted = completedActions.includes('run-policy');
     const policyRunComplete = hasReachedScene(activeScene, 'inspect-failed-rule');
     const showRunState = policyRunStarted || policyRunComplete;
-    const docRuleSelected = hasReachedScene(activeScene, 'inspect-escalation-policy');
-    const escalationRuleSelected = hasReachedScene(activeScene, 'continue-to-route');
+    const docRuleSelected = completedActions.includes('inspect-failed-rule');
+    const escalationRuleSelected = false;
 
     return (
       <div className="tour-policy-shell">
@@ -1263,14 +1263,7 @@ function renderProductScreen(
             <h2>{caseData.policyName}</h2>
           </div>
           <div className="tour-policy-controls">
-            <button
-              type="button"
-              className="tour-tool-button"
-              disabled={inputFactsVisible}
-              {...targetProps('policy-input-facts')}
-            >
-              View input facts
-            </button>
+            <span className="tour-tool-chip">Input facts visible</span>
             <button
               type="button"
               className="tour-tool-button"
@@ -1313,13 +1306,8 @@ function renderProductScreen(
             >
               {policyGraphNodes.map((node, index) => {
                 const isDocRule = node.id === 'doc-006';
-                const isEscalationRule = node.id === 'esc-002';
-                const isSelected =
-                  (isDocRule && docRuleSelected && !escalationRuleSelected) ||
-                  (isEscalationRule && escalationRuleSelected);
-                const isDisabled =
-                  (isDocRule && !policyRunComplete) ||
-                  (isEscalationRule && !docRuleSelected);
+                const isSelected = isDocRule && docRuleSelected;
+                const isDisabled = isDocRule && !policyRunComplete;
                 const nodeProps = node.targetId ? targetProps(node.targetId) : {};
                 const nodeContent = (
                   <>
@@ -1408,6 +1396,14 @@ function renderProductScreen(
                     <dt>Effect on route</dt>
                     <dd>Triggered ESC-002</dd>
                   </div>
+                  <div>
+                    <dt>Route</dt>
+                    <dd>Senior Credit Reviewer</dd>
+                  </div>
+                  <div>
+                    <dt>Trust statement</dt>
+                    <dd>Client policy determined the route.</dd>
+                  </div>
                 </dl>
               </>
             )}
@@ -1435,7 +1431,6 @@ function renderProductScreen(
                 <button
                   type="button"
                   className="tour-action-button tour-continue-button"
-                  {...targetProps('policy-continue-route')}
                 >
                   Continue to route
                 </button>
@@ -1448,22 +1443,17 @@ function renderProductScreen(
   }
 
   if (screen === 'route') {
-    const escalationReviewed = hasReachedScene(activeScene, 'route-human-review');
+    const escalationReviewed = true;
     const routedToQueue = completedActions.includes('route-human-review');
 
     return (
       <div className="tour-route-shell">
         <section className="tour-product-panel tour-route-main">
           <span className="tour-panel-label">Operational route</span>
-          <button
-            type="button"
-            className="tour-escalate-result"
-            disabled={escalationReviewed}
-            {...targetProps('escalate-result')}
-          >
+          <div className="tour-escalate-result">
             <span>{caseData.route.finalRoute}</span>
             <strong>{caseData.route.supportingText}</strong>
-          </button>
+          </div>
 
           <div className="tour-route-reason" data-visible={escalationReviewed ? 'true' : undefined}>
             <strong>Reason</strong>
@@ -1527,56 +1517,46 @@ function renderProductScreen(
     );
   }
 
-  const auditDetailVisible = hasReachedScene(activeScene, 'complete-tour');
+  const auditDetailVisible =
+    completedActions.includes('open-failed-rule-detail') ||
+    hasReachedScene(activeScene, 'complete-tour');
   const auditCompletionVisible = hasReachedScene(activeScene, 'complete-tour');
 
   return (
     <div className="tour-audit-shell">
       <section className="tour-product-panel tour-audit-panel">
         <span className="tour-panel-label">Decision audit trail</span>
-        {activeScene.targetId === 'audit-table' ? (
-          <button type="button" className="tour-audit-table" {...targetProps('audit-table')}>
-            {caseData.auditEvents.map((event) => (
-              <span key={`${event.time}-${event.reference}`}>
-                <span>{event.time}</span>
-                <strong>{event.event}</strong>
-                <small>{event.reference}</small>
-              </span>
-            ))}
-          </button>
-        ) : (
-          <div className="tour-audit-table" role="list">
-            {caseData.auditEvents.map((event) => {
-              const isDocFailure = event.reference === 'DOC-006';
+        <div className="tour-audit-table" role="list">
+          {caseData.auditEvents.map((event) => {
+            const isDocFailure = event.reference === 'DOC-006';
 
-              if (isDocFailure && !auditDetailVisible) {
-                return (
-                  <button
-                    type="button"
-                    key={`${event.time}-${event.reference}`}
-                    className="tour-audit-row-button"
-                    {...targetProps('audit-doc-rule')}
-                  >
-                    <span>{event.time}</span>
-                    <strong>{event.event}</strong>
-                    <small>{event.reference}</small>
-                  </button>
-                );
-              }
-
+            if (isDocFailure && !auditDetailVisible) {
               return (
-                <span
+                <button
+                  type="button"
                   key={`${event.time}-${event.reference}`}
-                  data-selected={isDocFailure && auditDetailVisible ? 'true' : undefined}
+                  className="tour-audit-row-button"
+                  {...targetProps('audit-doc-rule')}
                 >
                   <span>{event.time}</span>
                   <strong>{event.event}</strong>
                   <small>{event.reference}</small>
-                </span>
+                </button>
               );
-            })}
-          </div>
-        )}
+            }
+
+            return (
+              <span
+                key={`${event.time}-${event.reference}`}
+                data-selected={isDocFailure && auditDetailVisible ? 'true' : undefined}
+              >
+                <span>{event.time}</span>
+                <strong>{event.event}</strong>
+                <small>{event.reference}</small>
+              </span>
+            );
+          })}
+        </div>
       </section>
 
       <section className="tour-product-panel tour-audit-detail-panel">
