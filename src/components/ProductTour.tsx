@@ -27,6 +27,7 @@ import {
   type TourScreen,
   tourScenes,
 } from '../data/tourData';
+import LogoMark from './LogoMark';
 import TourTooltip from './TourTooltip';
 
 type TourDirection = 'forward' | 'backward';
@@ -778,12 +779,7 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
       <main className="tour-gate" aria-labelledby="tour-gate-title">
         <div className="tour-gate-card">
           <div className="tour-gate-brand">
-            <span className="brand-mark" aria-hidden="true">
-              <span className="brand-dot brand-dot-one" />
-              <span className="brand-dot brand-dot-two" />
-              <span className="brand-dot brand-dot-three" />
-              <span className="brand-core" />
-            </span>
+            <LogoMark />
             <span>BPOptima</span>
           </div>
           <h1 id="tour-gate-title">Decision Replay</h1>
@@ -817,12 +813,7 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
       <header className="tour-shell-header">
         <div className="tour-title-block">
           <span className="tour-brand">
-            <span className="brand-mark" aria-hidden="true">
-              <span className="brand-dot brand-dot-one" />
-              <span className="brand-dot brand-dot-two" />
-              <span className="brand-dot brand-dot-three" />
-              <span className="brand-core" />
-            </span>
+            <LogoMark />
             BPOptima
           </span>
           <div>

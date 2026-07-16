@@ -1,4 +1,5 @@
 import { Moon, Sun } from 'lucide-react';
+import LogoMark from './LogoMark';
 
 type Theme = 'light' | 'dark';
 
@@ -23,12 +24,7 @@ function Header({
     <header className="site-header">
       <nav className="navbar" aria-label="Primary navigation">
         <a className="brand" href="#top" aria-label="BPOptima home">
-          <span className="brand-mark" aria-hidden="true">
-            <span className="brand-dot brand-dot-one" />
-            <span className="brand-dot brand-dot-two" />
-            <span className="brand-dot brand-dot-three" />
-            <span className="brand-core" />
-          </span>
+          <LogoMark />
           <span>BPOptima</span>
         </a>
 

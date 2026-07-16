@@ -34,8 +34,8 @@
   --color-header: #070c18;
   --color-header-text: #ffffff;
   --color-header-muted: #a4aec0;
-  --color-logo-mark: #ffffff;
-  --color-logo-cutout: #070c18;
+  --color-logo-mark: #05070d;
+  --color-logo-cutout: #ffffff;
   --color-shadow: rgba(0, 0, 0, 0.22);
   --color-pass: #47b881;
   --color-warning: #f09a4a;
@@ -112,83 +112,22 @@ a:focus-visible {
 }
 
 .brand-mark {
-  position: relative;
-  display: inline-block;
+  display: block;
   width: 28px;
   height: 28px;
-  overflow: hidden;
-  border: 0;
-  border-radius: 50%;
-  color: var(--color-logo-cutout);
-  background: var(--color-logo-mark);
   flex: 0 0 auto;
 }
 
-.brand-core {
-  position: absolute;
-  top: 10px;
-  left: 8px;
-  width: 9px;
-  height: 9px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  background: transparent;
+.brand-mark-disc {
+  fill: var(--color-logo-mark);
 }
 
-.brand-dot,
-.brand-mark::before,
-.brand-mark::after {
-  position: absolute;
-  background: currentColor;
-  content: '';
-}
-
-.brand-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-}
-
-.brand-mark::before {
-  top: 5px;
-  left: 12px;
-  width: 2px;
-  height: 8px;
-  border-radius: 999px;
-}
-
-.brand-mark::after {
-  top: 14px;
-  left: 5px;
-  width: 8px;
-  height: 2px;
-  border-radius: 999px;
-}
-
-.brand-dot-one {
-  top: 4px;
-  left: 11px;
-}
-
-.brand-dot-two {
-  top: 13px;
-  left: 4px;
-}
-
-.brand-dot-three {
-  top: 8px;
-  right: 6px;
-}
-
-.brand-dot-three::before {
-  position: absolute;
-  top: 1px;
-  left: -5px;
-  width: 6px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
-  content: '';
+.brand-mark-stroke {
+  fill: none;
+  stroke: var(--color-logo-cutout);
+  stroke-width: 5.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .nav-links {
@@ -1361,7 +1300,7 @@ h2 {
   text-align: left;
 }
 
-.tour-title-block span:not(.brand-mark):not(.brand-dot):not(.brand-core) {
+.tour-title-block > div > span {
   color: var(--color-muted);
   font-size: 0.8rem;
   font-weight: 720;

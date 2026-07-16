@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import DecisionDetailDrawer from './DecisionDetailDrawer';
+import LogoMark from './LogoMark';
 import {
   dashboardSummaries,
   decisionRecords,
@@ -65,12 +66,7 @@ function DecisionDashboard({
     <main className="dashboard-shell" aria-labelledby="dashboard-title">
       <header className="dashboard-topbar">
         <a className="brand" href="#top" aria-label="BPOptima home" onClick={onBackToLanding}>
-          <span className="brand-mark" aria-hidden="true">
-            <span className="brand-dot brand-dot-one" />
-            <span className="brand-dot brand-dot-two" />
-            <span className="brand-dot brand-dot-three" />
-            <span className="brand-core" />
-          </span>
+          <LogoMark />
           <span>BPOptima</span>
         </a>
         <div className="dashboard-topbar-actions">
