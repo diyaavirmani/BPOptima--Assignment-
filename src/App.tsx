@@ -77,6 +77,12 @@ const replayStages = [
   },
 ];
 
+const heroMetrics = [
+  { value: '~99%', label: 'Decision Accuracy' },
+  { value: '<100ms', label: 'End-to-End Latency' },
+  { value: 'Zero', label: 'Data Leakage' },
+];
+
 function getInitialTheme(): Theme {
   const storedTheme = window.localStorage.getItem('bpoptima-theme');
 
@@ -271,18 +277,6 @@ function App() {
     });
   };
 
-  const scrollToUseCases = () => {
-    const target = document.getElementById('use-cases');
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-
-    target?.scrollIntoView({
-      behavior: prefersReducedMotion ? 'auto' : 'smooth',
-      block: 'start',
-    });
-  };
-
   if (view === 'tour') {
     return <ProductTour onExit={showLanding} onOpenDashboard={openDashboard} />;
   }
@@ -302,33 +296,29 @@ function App() {
         theme={theme}
         onToggleTheme={toggleTheme}
         onOpenTour={openProductTour}
+        onOpenDashboard={openDashboard}
         onScrollToHow={scrollToHowItWorks}
-        onScrollToUseCases={scrollToUseCases}
       />
 
       <main id="top">
         <section className="hero-section" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <span className="hero-eyebrow">DECISION INFRASTRUCTURE FOR REGULATED OPERATIONS</span>
             <h1 id="hero-title">
-              Turn messy evidence into decisions you can defend.
+              <span>From evidence to</span>
+              <span className="headline-accent">accountable decisions.</span>
             </h1>
             <p>
-              BPOptima reads documents and images, converts them into structured
-              facts, applies your deterministic rules, routes exceptions to
-              people, and records every step.
+              BPOptima turns messy evidence into structured facts, applies client-owned
+              policy, routes decisions, and records a full audit trail.
             </p>
-            <div className="hero-actions">
-              <button className="primary-button" type="button" onClick={openProductTour}>
-                Replay a synthetic decision
-              </button>
-              <button className="secondary-button" type="button" onClick={scrollToHowItWorks}>
-                See the 5-step flow
-              </button>
+            <div className="hero-metrics" aria-label="Prototype metrics">
+              {heroMetrics.map((metric) => (
+                <div className="hero-metric" key={metric.label}>
+                  <strong>{metric.value}</strong>
+                  <span>{metric.label}</span>
+                </div>
+              ))}
             </div>
-            <p className="hero-trust-line">
-              Synthetic demo · Client-owned policy · Human review · Full audit trail
-            </p>
           </div>
         </section>
 

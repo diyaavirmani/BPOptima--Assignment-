@@ -74,8 +74,8 @@ const initialTourState: TourState = {
 };
 
 const tooltipFallback = {
-  width: 360,
-  height: 230,
+  width: 280,
+  height: 156,
 };
 
 const viewportPadding = 16;
@@ -181,6 +181,7 @@ function getTooltipStyle(
   position: TargetPosition | null,
   placement: TourScene['placement'],
   isMobile: boolean,
+  sceneId: string,
   tooltipRect?: DOMRect,
 ): CSSProperties {
   if (isMobile) {
@@ -204,6 +205,16 @@ function getTooltipStyle(
   const tooltipWidth = tooltipRect?.width ?? tooltipFallback.width;
   const tooltipHeight = tooltipRect?.height ?? tooltipFallback.height;
   const gap = 18;
+
+  if (sceneId === 'select-revenue-fact') {
+    return {
+      top: 'auto',
+      left: viewportPadding + 12,
+      bottom: viewportPadding + 12,
+      width: tooltipFallback.width,
+    };
+  }
+
   let top = position.top + position.height / 2 - tooltipHeight / 2;
   let left = position.left + position.width + gap;
 
@@ -231,12 +242,6 @@ function getTooltipStyle(
 function StatusPill({ tone, children }: { tone: 'pass' | 'fail' | 'warn' | 'neutral'; children: ReactNode }) {
   return <span className={`tour-status tour-status-${tone}`}>{children}</span>;
 }
-
-const parseProgressSteps = [
-  'Reading page...',
-  'Detecting structure...',
-  'Building document map...',
-] as const;
 
 const documentRegions = [
   {
@@ -406,6 +411,19 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
   const policyRunTimerRef = useRef<number | null>(null);
   const routeTimerRef = useRef<number | null>(null);
   const nudgeTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, []);
 
   const activeMainStepIndex = mainTourSteps.findIndex((step) => step.id === activeScene.mainStep);
   const completedMainSteps = new Set(
@@ -731,8 +749,8 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
     }
 
     return {
-      top: targetPosition.top + targetPosition.height / 2,
-      left: targetPosition.left + targetPosition.width / 2,
+      top: targetPosition.top + Math.min(18, Math.max(10, targetPosition.height * 0.34)),
+      left: targetPosition.left + Math.min(targetPosition.width - 8, Math.max(8, targetPosition.width - 12)),
     };
   }, [targetPosition]);
 
@@ -742,9 +760,10 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
         targetPosition,
         activeScene.placement,
         isMobile,
+        activeScene.id,
         tooltipRef.current?.getBoundingClientRect(),
       ),
-    [activeScene.placement, isMobile, targetPosition],
+    [activeScene.id, activeScene.placement, isMobile, targetPosition],
   );
 
   const screenStyle = {
@@ -824,6 +843,14 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
         </div>
 
         <div className="tour-header-actions">
+          <button
+            type="button"
+            className="tour-icon-button"
+            onClick={goBack}
+            disabled={activeSceneIndex === 0}
+          >
+            Back
+          </button>
           <button type="button" className="tour-icon-button" onClick={restartTour}>
             <RotateCcw size={16} aria-hidden="true" />
             Restart
@@ -891,13 +918,8 @@ function ProductTour({ onExit, onOpenDashboard }: ProductTourProps) {
         <TourTooltip
           ref={tooltipRef}
           scene={activeScene}
-          sceneIndex={activeSceneIndex}
-          totalScenes={tourScenes.length}
           descriptionVisible={descriptionVisible}
           style={tooltipStyle}
-          canGoBack={activeSceneIndex > 0}
-          onBack={goBack}
-          onFocusTarget={focusActiveTarget}
         />
       </section>
     </main>
@@ -1022,7 +1044,7 @@ function renderProductScreen(
               disabled={parsed}
               {...targetProps('document-parse')}
             >
-              Parse
+              {parsed ? 'Parsed ✓' : 'Parse'}
             </button>
             <button
               type="button"
@@ -1030,18 +1052,12 @@ function renderProductScreen(
               disabled={!parsed || factsExtracted}
               {...targetProps('facts-extract')}
             >
-              Extract
+              {factsExtracted ? 'Extracted ✓' : 'Extract'}
             </button>
           </div>
           <div className="tour-toolbar-secondary">
-            <span className="tour-tool-chip">
-              View source
-            </span>
-            <span className="tour-toolbar-toggle" aria-label="Output format">
-              <span data-active="true">Markdown</span>
-              <span>JSON</span>
-            </span>
-            <span className="tour-toolbar-note">Simulated parsing</span>
+            <span className="tour-tool-chip">Synthetic demo</span>
+            <span className="tour-toolbar-note">Page 1 of 2</span>
           </div>
         </div>
 
@@ -1052,21 +1068,10 @@ function renderProductScreen(
                 <span className="tour-panel-label">Document viewer</span>
                 <h2>Loan Application.pdf</h2>
               </div>
-              <span>Page 1 of 2 · 100%</span>
-            </div>
-
-            <div className="tour-document-tabs" aria-label="Synthetic documents">
-              <span data-active="true">Loan Application.pdf</span>
-              <span>Sales Ledger.jpg</span>
-              <span>Bank Statements</span>
+              <span>Synthetic document</span>
             </div>
 
             <div className="tour-document-shell">
-              <aside className="tour-page-thumbnails" aria-label="Document pages">
-                <span data-active="true">1</span>
-                <span>2</span>
-              </aside>
-
               <div className="tour-document-canvas">
                 <div
                   className="tour-document-preview"
@@ -1112,12 +1117,11 @@ function renderProductScreen(
                   {documentRegions.map((region, index) => (
                     <span
                       className={`tour-document-region ${region.className}`}
+                      aria-label={`${region.reference} ${region.label}`}
                       style={{ '--region-delay': `${index * 120 + 250}ms` } as CSSProperties}
                       key={region.id}
                     >
-                      <span>{region.reference}</span>
-                      <strong>{region.label}</strong>
-                      <small>{region.value}</small>
+                      <span>{index + 1}</span>
                     </span>
                   ))}
                 </div>
@@ -1148,15 +1152,6 @@ function renderProductScreen(
               <span>Synthetic data</span>
             </div>
 
-            <div className="tour-output-tabs" aria-label="Static output formats">
-              <span data-active="true">
-                Markdown
-              </span>
-              <span>
-                JSON
-              </span>
-            </div>
-
             {!parsed && (
               <div className="tour-output-empty">
                 <strong>Awaiting parse</strong>
@@ -1167,16 +1162,6 @@ function renderProductScreen(
             {parsed && !factsExtracted && (
               <>
                 <div className="tour-parse-status" data-complete="true">
-                  <div className="tour-parse-progress" aria-label="Simulated parse progress">
-                    {parseProgressSteps.map((step, index) => (
-                      <span
-                        key={step}
-                        style={{ '--progress-delay': `${index * 150}ms` } as CSSProperties}
-                      >
-                        {step}
-                      </span>
-                    ))}
-                  </div>
                   <strong>Simulated parse complete</strong>
                   <span>
                     Document regions and parsed chunks are ready for extraction.
@@ -1189,11 +1174,8 @@ function renderProductScreen(
                       key={chunk.id}
                       style={{ '--chunk-delay': `${index * 100 + 900}ms` } as CSSProperties}
                     >
-                      <span>
-                        {chunk.id} · {chunk.type}
-                      </span>
+                      <span>{chunk.id}</span>
                       <strong>{chunk.label}</strong>
-                      <small>{chunk.value}</small>
                     </article>
                   ))}
                 </div>
