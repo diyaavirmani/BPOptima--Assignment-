@@ -8,9 +8,8 @@ Important: this is a conceptual prototype based on BPOptima's publicly described
 
 ## Live Links
 
-- Live prototype: Add Vercel URL
-- 5-7 minute walkthrough: Add Loom or Vimeo URL
-- Repository: Add GitHub URL
+- Live prototype: https://bpoptima-assignment.onrender.com
+- Walkthrough: https://youtu.be/Z4nPt4dgIas
 
 ## The Problem
 
